@@ -24,6 +24,9 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 
 void SP_misc_teleporter_dest (edict_t *ent);
 
+int playerStatus;
+int freezeTimer = 100;
+int burnTimer = 100;
 //
 // Gross, ugly, disgustuing hack section
 //
@@ -617,7 +620,7 @@ void InitClientPersistant (gclient_t *client)
 	client->pers.weapon = item;
 
 	client->pers.health			= 100;
-	client->pers.max_health		= 100;
+	client->pers.max_health		= 200; //Tim C
 
 	client->pers.max_bullets	= 200;
 	client->pers.max_shells		= 100;
@@ -1741,6 +1744,58 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		if (other->inuse && other->client->chase_target == ent)
 			UpdateChaseCam(other);
 	}
+	// Tim C
+	if (ent->health <= 25)
+	{
+		playerStatus = 1;
+
+		if (freezeTimer < 100)
+		{
+			freezeTimer++;
+		}
+
+		if (freezeTimer == 100)
+		{
+			if (ent->health != 1)
+			{
+				ent->health--;
+				gi.cprintf(ent, PRINT_HIGH, "%s", "You are freezing!");
+				freezeTimer = 0;
+			}
+			else
+				player_die(ent, ent, ent, 1, vec3_origin);
+
+		}
+	
+	}
+	else if (ent->health >= 175)
+	{
+		playerStatus = 2;
+
+		if (burnTimer < 100)
+		{
+			 burnTimer++;
+		}
+
+		if (burnTimer == 100)
+		{
+			if (ent->health != 199)
+			{
+				ent->health++;
+				gi.cprintf(ent, PRINT_HIGH, "%s", "You are burning!");
+				burnTimer = 0;
+			}
+			else
+				player_die(ent, ent, ent, 1, vec3_origin);
+		}
+
+	}
+	else
+	{
+		playerStatus = 0;
+		client->ps.pmove.pm_type = PM_NORMAL;
+	}
+
 }
 
 
@@ -1802,4 +1857,7 @@ void ClientBeginServerFrame (edict_t *ent)
 			PlayerTrail_Add (ent->s.old_origin);
 
 	client->latched_buttons = 0;
+	//Tim C
+	ent->accel = 1;
+	ent->decel = 1;
 }
