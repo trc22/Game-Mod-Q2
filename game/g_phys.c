@@ -129,6 +129,32 @@ void SV_Impact (edict_t *e1, trace_t *trace)
 	
 	if (e2->touch && e2->solid != SOLID_NOT)
 		e2->touch (e2, e1, NULL, NULL);
+
+	// Tim C
+	if (e1->client)
+		gi.cprintf(e1, PRINT_HIGH, "%s", "Player Collision1");
+
+	if (e1->client != NULL && e2->client != NULL)
+	{
+		gi.cprintf(e1, PRINT_HIGH, "%s", "Player Collision1");
+		gi.cprintf(e2, PRINT_HIGH, "%s", "Player Collision2");
+		if (e1->health <= 25 && e2->health >= 175) //Frozen and burning player collision
+		{
+			e1->health = 100;
+			e2->health = 100;
+		}
+		// Tim C
+		if (e1->health <= 25 && e2->health < 175 && e2->health > 25) //Frozen and normal temp player collision
+		{
+			e1->health = 100;
+			e2->health = 25;
+		}
+		if (e1->health >= 175 && e2->health < 175 && e2->health > 25) //Burning and normal temp player collision
+		{
+			e1->health = 100;
+			e2->health = 175;
+		}
+	}
 }
 
 
