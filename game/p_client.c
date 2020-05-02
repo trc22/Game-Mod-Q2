@@ -619,7 +619,7 @@ void InitClientPersistant (gclient_t *client)
 
 	client->pers.weapon = item;
 
-	client->pers.health			= 100;
+	client->pers.health			= 175;
 	client->pers.max_health		= 200; //Tim C
 
 	client->pers.max_bullets	= 200;
@@ -1609,6 +1609,8 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			client->ps.pmove.pm_type = PM_GIB;
 		else if (ent->deadflag)
 			client->ps.pmove.pm_type = PM_DEAD;
+		else if (ent->health <= 25)
+			client->ps.pmove.pm_type = PM_FREEZE; //Tim C
 		else
 			client->ps.pmove.pm_type = PM_NORMAL;
 
@@ -1618,7 +1620,12 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		for (i=0 ; i<3 ; i++)
 		{
 			pm.s.origin[i] = ent->s.origin[i]*8;
-			pm.s.velocity[i] = ent->velocity[i]*8;
+			if (ent->health >= 175) // Tim C
+				pm.s.velocity[i] = ent->velocity[i] * 8.25;
+			else
+				pm.s.velocity[i] = ent->velocity[i]*8;
+			
+
 		}
 
 		if (memcmp(&client->old_pmove, &pm.s, sizeof(pm.s)))
@@ -1790,12 +1797,6 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		}
 
 	}
-	else
-	{
-		playerStatus = 0;
-		client->ps.pmove.pm_type = PM_NORMAL;
-	}
-
 }
 
 
@@ -1857,7 +1858,4 @@ void ClientBeginServerFrame (edict_t *ent)
 			PlayerTrail_Add (ent->s.old_origin);
 
 	client->latched_buttons = 0;
-	//Tim C
-	ent->accel = 1;
-	ent->decel = 1;
 }
