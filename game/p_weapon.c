@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static qboolean	is_quad;
 static byte		is_silenced;
 
+int hyperTimer = 5;
 
 void weapon_grenade_fire (edict_t *ent, qboolean held);
 
@@ -905,6 +906,14 @@ void Weapon_HyperBlaster_Fire (edict_t *ent)
 			else
 				damage = 20;
 			Blaster_Fire (ent, offset, damage, true, effect);
+			//Tim C
+			hyperTimer--;
+			if (hyperTimer == 0)
+			{
+				ent->health--;
+				hyperTimer = 5;
+			}
+
 			if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
 				ent->client->pers.inventory[ent->client->ammo_index]--;
 
@@ -1186,7 +1195,7 @@ void weapon_shotgun_fire (edict_t *ent)
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		offset;
-	int			damage = 4;
+	int			damage = -4;
 	int			kick = 8;
 
 	if (ent->client->ps.gunframe == 9)
@@ -1211,6 +1220,7 @@ void weapon_shotgun_fire (edict_t *ent)
 
 	if (deathmatch->value)
 		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_DEATHMATCH_SHOTGUN_COUNT, MOD_SHOTGUN);
+		
 	else
 		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
 
@@ -1267,7 +1277,8 @@ void weapon_supershotgun_fire (edict_t *ent)
 	v[YAW]   = ent->client->v_angle[YAW] + 5;
 	AngleVectors (v, forward, NULL, NULL);
 	fire_shotgun (ent, start, forward, damage, kick, DEFAULT_SHOTGUN_HSPREAD, DEFAULT_SHOTGUN_VSPREAD, DEFAULT_SSHOTGUN_COUNT/2, MOD_SSHOTGUN);
-
+	//Tim C
+	ent->health += 5;
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
 	gi.WriteShort (ent-g_edicts);
