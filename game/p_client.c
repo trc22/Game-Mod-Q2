@@ -26,7 +26,8 @@ void SP_misc_teleporter_dest (edict_t *ent);
 
 int playerStatus;
 int freezeTimer = 100;
-int burnTimer = 100;
+int burnTimer = 200;
+edict_t *burnTarget = NULL;
 //
 // Gross, ugly, disgustuing hack section
 //
@@ -591,7 +592,7 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 			gi.sound (self, CHAN_VOICE, gi.soundindex(va("*death%i.wav", (rand()%4)+1)), 1, ATTN_NORM, 0);
 		}
 	}
-
+	
 	self->deadflag = DEAD_DEAD;
 
 	gi.linkentity (self);
@@ -1775,20 +1776,33 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 	{
 		playerStatus = 2;
 
-		if (burnTimer < 100)
+		if (burnTimer < 200)
 		{
 			 burnTimer++;
 		}
 
-		if (burnTimer == 100)
+		if (burnTimer == 200)
 		{
-			if (ent->health < 199)
+			if (ent->health < 200)
 			{
 				//ent->health++;
-				gi.cprintf(ent, PRINT_HIGH, "%s", "You are burning!");
+				//gi.cprintf(ent, PRINT_HIGH, "%s", "You are burning!\n");
 				burnTimer = 0;
-				T_RadiusDamage(ent, ent, 10, NULL, 1000, MOD_LAVA);
-				ent->speed = 500;
+				if ((burnTarget = findradius(burnTarget, ent->s.origin, 100)) != NULL && burnTarget->client && burnTarget != ent)
+				{
+					gi.cprintf(ent, PRINT_HIGH, "%s", "Target in range!\n");
+					burnTarget->health+=5;
+				}
+				
+				/*for (i = 1; i <= maxclients->value; i++) {
+					burnTarget = g_edicts + i;
+					if (burnTarget != ent)
+						burnTarget->health++;
+				}*/
+				//T_RadiusDamage(ent, ent, 10, NULL, 100, MOD_LAVA);
+				//T_RadiusDamage(ent, burnTarget, 10, NULL, 100, MOD_LAVA);
+
+
 			}
 			else
 				player_die(ent, ent, ent, 1, vec3_origin);
