@@ -25,8 +25,9 @@ void ClientUserinfoChanged (edict_t *ent, char *userinfo);
 void SP_misc_teleporter_dest (edict_t *ent);
 
 int playerStatus;
-int freezeTimer = 100;
+int freezeTimer = 200;
 int burnTimer = 200;
+int waterTimer = 200;
 edict_t *burnTarget = NULL;
 //
 // Gross, ugly, disgustuing hack section
@@ -592,7 +593,6 @@ void player_die (edict_t *self, edict_t *inflictor, edict_t *attacker, int damag
 			gi.sound (self, CHAN_VOICE, gi.soundindex(va("*death%i.wav", (rand()%4)+1)), 1, ATTN_NORM, 0);
 		}
 	}
-	
 	self->deadflag = DEAD_DEAD;
 
 	gi.linkentity (self);
@@ -620,7 +620,7 @@ void InitClientPersistant (gclient_t *client)
 
 	client->pers.weapon = item;
 
-	client->pers.health			= 175;
+	client->pers.health			= 100;
 	client->pers.max_health		= 200; //Tim C
 
 	client->pers.max_bullets	= 200;
@@ -1610,21 +1610,29 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			client->ps.pmove.pm_type = PM_GIB;
 		else if (ent->deadflag)
 			client->ps.pmove.pm_type = PM_DEAD;
-		else if (ent->health <= 25)
-			client->ps.pmove.pm_type = PM_FREEZE; //Tim C
 		else
 			client->ps.pmove.pm_type = PM_NORMAL;
 
 		client->ps.pmove.gravity = sv_gravity->value;
 		pm.s = client->ps.pmove;
 
-		for (i=0 ; i<3 ; i++)
+		if (ent->health > 25)
 		{
-			pm.s.origin[i] = ent->s.origin[i]*8;
-			pm.s.velocity[i] = ent->velocity[i]*8;
+			for (i = 0; i < 3; i++)
+			{
+				pm.s.origin[i] = ent->s.origin[i] * 8;
+				pm.s.velocity[i] = ent->velocity[i] * 8;
 
+			}
 		}
-
+		else
+		{
+			for (i = 0; i < 3; i++)
+			{
+				pm.s.origin[i] = ent->s.origin[i] * 8;
+				pm.s.velocity[i] = ent->velocity[i] * 0.01;
+			}
+		}
 		if (memcmp(&client->old_pmove, &pm.s, sizeof(pm.s)))
 		{
 			pm.snapinitial = true;
@@ -1749,16 +1757,16 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			UpdateChaseCam(other);
 	}
 	// Tim C
-	if (ent->health <= 25)
+	if (ent->health <= 25 && !(ent->flags & FL_INWATER))
 	{
 		playerStatus = 1;
 
-		if (freezeTimer < 100)
+		if (freezeTimer < 200)
 		{
 			freezeTimer++;
 		}
 
-		if (freezeTimer == 100)
+		if (freezeTimer == 200)
 		{
 			if (ent->health != 1)
 			{
@@ -1772,42 +1780,65 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		}
 	
 	}
-	else if (ent->health >= 175)
+	else if (ent->health >= 175 && !(ent->flags && FL_INWATER))
 	{
-		playerStatus = 2;
+		if (playerStatus == 0 || playerStatus == 1)
+			playerStatus = 2;
 
 		if (burnTimer < 200)
 		{
-			 burnTimer++;
+			burnTimer++;
 		}
 
 		if (burnTimer == 200)
 		{
-			if (ent->health < 200)
+			if (ent->health < 199)
 			{
-				//ent->health++;
-				//gi.cprintf(ent, PRINT_HIGH, "%s", "You are burning!\n");
-				burnTimer = 0;
-				if ((burnTarget = findradius(burnTarget, ent->s.origin, 100)) != NULL && burnTarget->client && burnTarget != ent)
+				ent->health++;
+				//	while ((burnTarget = findradius(burnTarget, ent->s.origin, 1000)) != NULL && burnTarget->client)
+				while ((burnTarget = findradius(burnTarget, ent->s.origin, 1000)) != NULL)
 				{
-					gi.cprintf(ent, PRINT_HIGH, "%s", "Target in range!\n");
-					burnTarget->health+=5;
+					burnTarget->health += 5;
+					gi.cprintf(ent, PRINT_HIGH, "%s", "You are radiating heat!\n");
 				}
-				
-				/*for (i = 1; i <= maxclients->value; i++) {
-					burnTarget = g_edicts + i;
-					if (burnTarget != ent)
-						burnTarget->health++;
-				}*/
-				//T_RadiusDamage(ent, ent, 10, NULL, 100, MOD_LAVA);
-				//T_RadiusDamage(ent, burnTarget, 10, NULL, 100, MOD_LAVA);
-
-
+				gi.cprintf(ent, PRINT_HIGH, "%s", "You are burning!\n");
+				burnTimer = 0;
 			}
 			else
+			{
+				if (playerStatus == 2)
+				{
+					BecomeExplosion1(ent);
+					if ((burnTarget = findradius(burnTarget, ent->s.origin, 1000)) != NULL && burnTarget->client && burnTarget != ent)
+					{
+						T_RadiusDamage(ent, ent, 250, other, 1000, MOD_LAVA);
+					}
+				}
 				player_die(ent, ent, ent, 1, vec3_origin);
-		}
+				playerStatus = 3;
+			}
 
+		}
+	}
+	else
+		playerStatus = 0;
+
+	if (ent->flags && FL_INWATER)
+	{
+		if (waterTimer < 200)
+			waterTimer++;
+		else if (playerStatus == 1)
+		{
+			ent->health-= 5;
+			gi.cprintf(ent, PRINT_HIGH, "%s", "Ur freezing and in the water! R U DUMB?\n");
+			waterTimer = 0;
+		}
+		else
+		{
+			ent->health--;
+			gi.cprintf(ent, PRINT_HIGH, "%s", "The water is really cold!\n");
+			waterTimer = 0;
+		}
 	}
 }
 
