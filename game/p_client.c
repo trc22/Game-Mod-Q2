@@ -1794,12 +1794,15 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		{
 			if (ent->health < 199)
 			{
+				gi.WriteByte(svc_muzzleflash);
+				gi.WriteShort(ent - g_edicts);
+				gi.WriteByte(MZ_RESPAWN);
+				gi.multicast(ent->s.origin, MULTICAST_PVS);
 				ent->health++;
 				//	while ((burnTarget = findradius(burnTarget, ent->s.origin, 1000)) != NULL && burnTarget->client)
-				while ((burnTarget = findradius(burnTarget, ent->s.origin, 1000)) != NULL)
+				while ((burnTarget = findradius(burnTarget, ent->s.origin, 1000)) != NULL && burnTarget != ent)
 				{
 					burnTarget->health += 5;
-					gi.cprintf(ent, PRINT_HIGH, "%s", "You are radiating heat!\n");
 				}
 				gi.cprintf(ent, PRINT_HIGH, "%s", "You are burning!\n");
 				burnTimer = 0;
@@ -1816,14 +1819,12 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 				}
 				player_die(ent, ent, ent, 1, vec3_origin);
 				playerStatus = 3;
+
 			}
 
 		}
 	}
-	else
-		playerStatus = 0;
-
-	if (ent->flags && FL_INWATER)
+	else if (ent->flags && FL_INWATER)
 	{
 		if (waterTimer < 200)
 			waterTimer++;
@@ -1840,6 +1841,8 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			waterTimer = 0;
 		}
 	}
+	else
+		playerStatus = 0;
 }
 
 

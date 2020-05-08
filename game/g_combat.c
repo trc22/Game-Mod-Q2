@@ -501,6 +501,12 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 			Killed (targ, inflictor, attacker, take, point);
 			return;
 		}
+		//Tim C
+		if (targ->client && attacker->client)
+		{
+			if (point[2] - targ->s.origin[2] > 18)
+				gi.cprintf(attacker, PRINT_HIGH, "%s", "Headshot");
+		}
 	}
 
 	if (targ->svflags & SVF_MONSTER)
@@ -568,10 +574,11 @@ void T_RadiusDamage (edict_t *inflictor, edict_t *attacker, float damage, edict_
 		{
 			if (CanDamage (ent, inflictor))
 			{
-				if (mod == MOD_LAVA)
+				if (mod == MOD_LAVA) //Tim C
 				{
 					damage = damage / 10;
-					ent->health += damage;
+					attacker->health += damage;
+					VectorSubtract(ent->s.origin, inflictor->s.origin, dir);
 				}
 					
 				else
