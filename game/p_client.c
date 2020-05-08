@@ -1780,7 +1780,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 		}
 	
 	}
-	else if (ent->health >= 175 && !(ent->flags && FL_INWATER))
+	else if (ent->health >= 175 && !(ent->flags & FL_INWATER))
 	{
 		if (playerStatus == 0 || playerStatus == 1)
 			playerStatus = 2;
@@ -1824,7 +1824,7 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 
 		}
 	}
-	else if (ent->flags && FL_INWATER)
+	else if (ent->flags & FL_INWATER)
 	{
 		if (waterTimer < 200)
 			waterTimer++;
@@ -1841,8 +1841,14 @@ void ClientThink (edict_t *ent, usercmd_t *ucmd)
 			waterTimer = 0;
 		}
 	}
-	else
-		playerStatus = 0;
+		else
+			playerStatus = 0;
+
+	if (ent->health < 199 && (ent->flags & FL_INWATER))
+	{
+		ent->flags &= ~FL_INWATER;
+	}
+
 }
 
 
