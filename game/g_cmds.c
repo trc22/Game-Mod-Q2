@@ -176,7 +176,7 @@ void Cmd_Give_f (edict_t *ent)
 		if (gi.argc() == 3)
 			ent->health = atoi(gi.argv(2));
 		else
-			ent->health = ent->max_health;
+			ent->health = 100;
 		if (!give_all)
 			return;
 	}
