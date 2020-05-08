@@ -275,7 +275,7 @@ void CL_ParseMuzzleFlash (void)
 	switch (weapon)
 	{
 	case MZ_BLASTER:
-		dl->color[0] = 1;dl->color[1] = 1;dl->color[2] = 0;
+		dl->color[0] = 0;dl->color[1] = 0;dl->color[2] = 1;
 		S_StartSound (NULL, i, CHAN_WEAPON, S_RegisterSound("weapons/blastf1a.wav"), volume, ATTN_NORM, 0);
 		break;
 	case MZ_BLUEHYPERBLASTER:
@@ -283,7 +283,7 @@ void CL_ParseMuzzleFlash (void)
 		S_StartSound (NULL, i, CHAN_WEAPON, S_RegisterSound("weapons/hyprbf1a.wav"), volume, ATTN_NORM, 0);
 		break;
 	case MZ_HYPERBLASTER:
-		dl->color[0] = 1;dl->color[1] = 1;dl->color[2] = 0;
+		dl->color[0] = 0;dl->color[1] = 0;dl->color[2] = 1;
 		S_StartSound (NULL, i, CHAN_WEAPON, S_RegisterSound("weapons/hyprbf1a.wav"), volume, ATTN_NORM, 0);
 		break;
 	case MZ_MACHINEGUN:
@@ -297,7 +297,7 @@ void CL_ParseMuzzleFlash (void)
 		S_StartSound (NULL, i, CHAN_AUTO,   S_RegisterSound("weapons/shotgr1b.wav"), volume, ATTN_NORM, 0.1);
 		break;
 	case MZ_SSHOTGUN:
-		dl->color[0] = 1;dl->color[1] = 1;dl->color[2] = 0;
+		dl->color[0] = 0;dl->color[1] = 0;dl->color[2] = 1;
 		S_StartSound (NULL, i, CHAN_WEAPON, S_RegisterSound("weapons/sshotf1b.wav"), volume, ATTN_NORM, 0);
 		break;
 	case MZ_CHAINGUN1:
@@ -1257,7 +1257,7 @@ void CL_BlasterParticles (vec3_t org, vec3_t dir)
 		active_particles = p;
 
 		p->time = cl.time;
-		p->color = 0xe0 + (rand()&7);
+		p->color = 0xb0 + (rand()&7);
 
 		d = rand()&15;
 		for (j=0 ; j<3 ; j++)
@@ -1314,7 +1314,7 @@ void CL_BlasterTrail (vec3_t start, vec3_t end)
 
 		p->alpha = 1.0;
 		p->alphavel = -1.0 / (0.3+frand()*0.2);
-		p->color = 0xe0;
+		p->color = 0xb0;
 		for (j=0 ; j<3 ; j++)
 		{
 			p->org[j] = move[j] + crand();
@@ -1592,7 +1592,7 @@ void CL_RocketTrail (vec3_t start, vec3_t end, centity_t *old)
 
 			p->alpha = 1.0;
 			p->alphavel = -1.0 / (1+frand()*0.2);
-			p->color = 0xdc + (rand()&3);
+			p->color = 0xb0 + (rand()&3);
 			for (j=0 ; j<3 ; j++)
 			{
 				p->org[j] = move[j] + crand()*5;
