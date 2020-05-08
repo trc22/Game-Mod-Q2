@@ -486,6 +486,35 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 // do the damage
 	if (take)
 	{
+		//Tim C
+		if (targ->client && attacker->client)
+		{
+			if (point[2] - targ->s.origin[2] > 16)
+			{
+				gi.cprintf(attacker, PRINT_HIGH, "%s", "Head shot");
+				take = take * 2;
+				for (int i; i < 1000; i++)
+				{
+					targ->client->ps.viewangles[ROLL] = 40;
+					targ->client->ps.viewangles[PITCH] = -15;
+				}
+				targ->client->ps.fov = 90;
+
+			}
+			else if (point[2] - targ->s.origin[2] < 1)
+			{
+				gi.cprintf(attacker, PRINT_HIGH, "%s", "Leg shot");
+				for (int i; i < 3; i++)
+					targ->velocity[i] * 0.01;
+			}
+			else
+			{
+				gi.cprintf(attacker, PRINT_HIGH, "%s", "Body shot");
+			}
+			gi.cprintf(attacker, PRINT_HIGH, "%s", "\n");
+
+		}
+
 		if ((targ->svflags & SVF_MONSTER) || (client))
 			SpawnDamage (TE_BLOOD, point, normal, take);
 		else
@@ -501,12 +530,7 @@ void T_Damage (edict_t *targ, edict_t *inflictor, edict_t *attacker, vec3_t dir,
 			Killed (targ, inflictor, attacker, take, point);
 			return;
 		}
-		//Tim C
-		if (targ->client && attacker->client)
-		{
-			if (point[2] - targ->s.origin[2] > 18)
-				gi.cprintf(attacker, PRINT_HIGH, "%s", "Headshot");
-		}
+
 	}
 
 	if (targ->svflags & SVF_MONSTER)
@@ -570,22 +594,12 @@ void T_RadiusDamage (edict_t *inflictor, edict_t *attacker, float damage, edict_
 		points = damage - 0.5 * VectorLength (v);
 		if (ent == attacker)
 			points = points * 0.5;
-		if (points > 0)
+		if (points > 0 || points < 0)
 		{
 			if (CanDamage (ent, inflictor))
 			{
-				if (mod == MOD_LAVA) //Tim C
-				{
-					damage = damage / 10;
-					attacker->health += damage;
-					VectorSubtract(ent->s.origin, inflictor->s.origin, dir);
-				}
-					
-				else
-				{
 					VectorSubtract(ent->s.origin, inflictor->s.origin, dir);
 					T_Damage(ent, inflictor, attacker, dir, inflictor->s.origin, vec3_origin, (int)points, (int)points, DAMAGE_RADIUS, mod);
-				}
 			}
 		}
 	}
