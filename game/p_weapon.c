@@ -549,7 +549,7 @@ void weapon_grenade_fire (edict_t *ent, qboolean held)
 	vec3_t	offset;
 	vec3_t	forward, right;
 	vec3_t	start;
-	int		damage = 125;
+	int		damage = -125;
 	float	timer;
 	int		speed;
 	float	radius;
@@ -712,10 +712,10 @@ void weapon_grenadelauncher_fire (edict_t *ent)
 	vec3_t	offset;
 	vec3_t	forward, right;
 	vec3_t	start;
-	int		damage = 120;
+	int		damage = -120;
 	float	radius;
 
-	radius = damage+40;
+	radius = (-1) * damage+40;
 	if (is_quad)
 		damage *= 4;
 
@@ -965,7 +965,7 @@ void Machinegun_Fire (edict_t *ent)
 	vec3_t		start;
 	vec3_t		forward, right;
 	vec3_t		angles;
-	int			damage = 8;
+	int			damage = -8;
 	int			kick = 2;
 	vec3_t		offset;
 
@@ -1065,9 +1065,9 @@ void Chaingun_Fire (edict_t *ent)
 	int			kick = 2;
 
 	if (deathmatch->value)
-		damage = 6;
+		damage = -6;
 	else
-		damage = 8;
+		damage = -8;
 
 	if (ent->client->ps.gunframe == 5)
 		gi.sound(ent, CHAN_AUTO, gi.soundindex("weapons/chngnu1a.wav"), 1, ATTN_IDLE, 0);
@@ -1158,6 +1158,7 @@ void Chaingun_Fire (edict_t *ent)
 		P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
 		fire_bullet (ent, start, forward, damage, kick, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, MOD_CHAINGUN);
+		ent->health++;
 	}
 
 	// send muzzle flash
@@ -1223,6 +1224,8 @@ void weapon_shotgun_fire (edict_t *ent)
 		
 	else
 		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
+
+	ent->health -= 5;
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -1424,7 +1427,7 @@ void weapon_bfg_fire (edict_t *ent)
 	VectorSet(offset, 8, 8, ent->viewheight-8);
 	P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 	fire_bfg (ent, start, forward, damage, 400, damage_radius);
-
+	ent->health = 100;
 	ent->client->ps.gunframe++;
 
 	PlayerNoise(ent, start, PNOISE_WEAPON);
